@@ -1,27 +1,16 @@
-package main
+package convert
 
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 )
-
-func StringToInt(stringVal string) {
-	i, err := strconv.Atoi(stringVal)
-	fmt.Println(i, err)
-}
 
 type People struct {
 	Name string `json:"name_title"`
 	Age  int    `json:"age_size"`
 }
 
-func StructToJsonDemo() {
-	p := People{
-		Name: "jqw",
-		Age:  18,
-	}
-
+func StructToJsonDemo(p People) {
 	jsonBytes, err := json.Marshal(p)
 	if err != nil {
 		fmt.Println(err)
@@ -29,13 +18,13 @@ func StructToJsonDemo() {
 	fmt.Println(string(jsonBytes))
 }
 
-func JsonToStructDemo() {
-	jsonStr := `
-        {
-			"name_title": "jqw",
-			"age_size": 12
-        }
-        `
+func JsonToStructDemo(jsonStr string) {
+	//jsonStr := `
+	//    {
+	//		"name_title": "jqw",
+	//		"age_size": 12
+	//    }
+	//    `
 	var people People
 	fmt.Println("JsonToStructDemo1", people)
 	err := json.Unmarshal([]byte(jsonStr), &people)
@@ -46,13 +35,13 @@ func JsonToStructDemo() {
 	fmt.Println(people)
 }
 
-func JsonToMapDemo() {
-	jsonStr := `
-        {
-			"name": "jqw",
-			"age": 18
-        }
-        `
+func JsonToMapDemo(jsonStr string) {
+	//jsonStr := `
+	//    {
+	//		"name": "jqw",
+	//		"age": 18
+	//    }
+	//    `
 	var mapResult map[string]interface{}
 	err := json.Unmarshal([]byte(jsonStr), &mapResult)
 	if err != nil {
@@ -93,14 +82,4 @@ func MapToInterface() {
 	// interface转map
 	a := student.(map[string]string)
 	fmt.Println(a)
-}
-
-func main() {
-	StringToInt("10000")
-	StructToJsonDemo()
-	JsonToStructDemo()
-	JsonToMapDemo()
-	MapToJsonDemo1()
-	MapToJsonDemo2()
-	MapToInterface()
 }
