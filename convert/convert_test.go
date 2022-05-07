@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+
+	"gotest.tools/v3/assert"
 )
 
 func TestStringToInt(t *testing.T) {
@@ -12,9 +14,7 @@ func TestStringToInt(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if i != 10000 {
-		t.Errorf("StringToInt Error")
-	}
+	assert.Equal(t, i, 10000, "StringToInt Error")
 }
 
 func TestStructToJsonDemo(t *testing.T) {
