@@ -1,0 +1,3 @@
+services:
+  master:
+    hostname: master-1
