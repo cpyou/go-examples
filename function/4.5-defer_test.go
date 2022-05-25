@@ -29,6 +29,10 @@ func TestDefer6(t *testing.T) {
 	defer6()
 }
 
+func TestDefer7(t *testing.T) {
+	defer7()
+}
+
 // 性能
 // 相比直接用CALL汇编指令调用函数，延迟调用则需花费更大的代价。
 // 这其中包括注册、调用等操作，还有额外的内存开销。

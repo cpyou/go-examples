@@ -1,14 +1,23 @@
 package function
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 )
 
-// 延迟调用
-// 语句defer向当前函数注册稍后执行的函数调用。
-//这些调用直到函数执行结束前才被执行，常用于资源释放、解除锁定，以及错误处理等操作。
+/*
+延迟调用
+语句defer向当前函数注册稍后执行的函数调用。
+这些调用直到函数执行结束前才被执行，常用于资源释放、解除锁定，以及错误处理等操作。
+
+1. go函数中return不是原子操作，在编译器中分解为两个部分：返回值赋值和return，
+    而defer则刚好被插入到末尾的return之前执行，因此可以在defer函数中修改返回值。
+2. 多个defer的执行顺序为LIFO（后进先出）
+3. defer、return、返回值三者的执行逻辑应该是：return最先执行，return负责将结果写入返回值中；
+	接着defer开始执行一些收尾工作；最后函数携带当前返回值退出。
+*/
 
 func defer1() {
 	f, err := os.Open("./4.5-defer.go")
@@ -81,4 +90,35 @@ func defer6() {
 	for i := 0; i < 10000; i++ {
 		do(i)
 	}
+}
+
+// return 之后的延迟调用不会执行
+func defer7() {
+
+	t := false
+
+	do := func() error {
+		println("do")
+		return errors.New("error")
+		//return nil
+	}
+	defer func() {
+		println("clear starting 1")
+		if !t {
+			println("clear")
+		}
+	}()
+	err := do()
+	if err != nil {
+		println(err)
+		return // 此后的延迟调用不会执行
+	}
+	defer func() {
+		println("clear starting 2")
+		if !t {
+			println("clear")
+		}
+	}()
+	t = true
+
 }
