@@ -67,3 +67,15 @@ func TestMapToJsonDemo2(t *testing.T) {
 func TestMapToInterface(t *testing.T) {
 	MapToInterface()
 }
+
+func TestArrayToInterface(t *testing.T) {
+	x := []string{"a", "b", "c", "d"}
+	fmt.Printf("%T: %v %d\n", x, x, len(x))
+
+	y := ArrayToInterface(x)
+	fmt.Printf("%T: %v\n", y, y)
+
+	z := InterfaceToArray(y)
+	fmt.Printf("%T: %v\n", z, z)
+
+}

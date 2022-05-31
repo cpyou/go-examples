@@ -83,3 +83,23 @@ func MapToInterface() {
 	a := student.(map[string]string)
 	fmt.Println(a)
 }
+
+// ArrayToInterface converting a []string to a []interface{}
+func ArrayToInterface(x []string) []interface{} {
+
+	y := make([]interface{}, len(x))
+	for i, v := range x {
+		y[i] = v
+	}
+	return y
+
+}
+
+// InterfaceToArray converting a []interface{} to a []string
+func InterfaceToArray(y []interface{}) []string {
+	z := make([]string, len(y))
+	for i, v := range y {
+		z[i] = fmt.Sprint(v)
+	}
+	return z
+}
