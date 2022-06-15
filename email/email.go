@@ -9,6 +9,7 @@ import (
 	"net/smtp"
 	"net/textproto"
 	"strings"
+	"time"
 
 	"gopkg.in/gomail.v2"
 )
@@ -87,7 +88,10 @@ func invokeSendEmail(in *SendEmailParams) error {
 	// Here is the key, you need to call tls.Dial instead of smtp.Dial
 	// for smtp servers running on 465 that require an ssl connection
 	// from the very beginning (no starttls)
-	conn, err := tls.Dial("tcp", net.JoinHostPort(in.SMTPHost, in.SMTPPort), tlsconfig)
+	//conn, err := tls.Dial("tcp", net.JoinHostPort(in.SMTPHost, in.SMTPPort), tlsconfig)
+	dialer := new(net.Dialer)
+	dialer.Timeout = 5 * time.Second
+	conn, err := tls.DialWithDialer(dialer, "tcp", net.JoinHostPort(in.SMTPHost, in.SMTPPort), tlsconfig)
 	if err != nil {
 		return err
 	}
