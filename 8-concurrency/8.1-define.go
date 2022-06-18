@@ -1,6 +1,9 @@
 package __concurrency
 
 import (
+	"fmt"
+	"math"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -108,4 +111,64 @@ func MultiWait() {
 	//done.
 	//wait exit.
 	//main exit.
+}
+
+//  运行时可能会创建很多线程，但任何时候仅有限的几个线程参与并发任务执行。该数量默认与处理器核数相等，可用runtime.GOMAXPROCS函数（或环境变量）修改。
+// 如参数小于1，GOMAXPROCS仅返回当前设置值，不做任何调整。
+
+// 测试目标函数
+func count() {
+	x := 0
+	for i := 0; i < math.MaxUint32; i++ {
+		x += i
+	}
+	println(x)
+}
+
+func test(n int) {
+	for i := 0; i < n; i++ {
+		count()
+	}
+}
+
+// 并发执行
+func test2(n int) {
+	var wg sync.WaitGroup
+	wg.Add(n)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			count()
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+func GoMaxProc() {
+	println("CPU Num", runtime.NumCPU())
+	n := runtime.GOMAXPROCS(0)
+	println("n:", n)
+
+	start := time.Now()
+	println("start", start.String())
+	test(n)
+	end := time.Now()
+	println("end", end.String())
+
+	fmt.Printf("用时：%0.2fS\n", end.Sub(start).Seconds())
+}
+
+func GoMaxProc2() {
+	println("CPU Num", runtime.NumCPU())
+	n := runtime.GOMAXPROCS(4)
+	println("n:", n)
+
+	start := time.Now()
+	println("start", start.String())
+	test2(n)
+	end := time.Now()
+	println("end", end.String())
+
+	fmt.Printf("用时：%0.2fS\n", end.Sub(start).Seconds())
 }

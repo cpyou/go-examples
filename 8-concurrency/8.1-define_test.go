@@ -1,6 +1,8 @@
 package __concurrency
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestDeferExec(t *testing.T) {
 	DeferExec()
@@ -17,6 +19,15 @@ func TestWaitGroup(t *testing.T) {
 func TestIncorrectWait(t *testing.T) {
 	IncorrectWait()
 }
+
 func TestMultiWait(t *testing.T) {
 	MultiWait()
+}
+
+func TestGoMaxProc(t *testing.T) {
+	GoMaxProc()
+}
+
+func TestGoMaxProc2(t *testing.T) {
+	GoMaxProc2()
 }
