@@ -31,3 +31,7 @@ func TestGoMaxProc(t *testing.T) {
 func TestGoMaxProc2(t *testing.T) {
 	GoMaxProc2()
 }
+
+func TestLocalStorage(t *testing.T) {
+	LocalStorage()
+}
