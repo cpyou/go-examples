@@ -22,4 +22,15 @@ Goexit 立即终止当前任务，运行时确保所有已注册延迟调用被�
 
 # 8.2 通道
 
+对于 closed 或 nil 通道，发送或接收操作都有相应规则：
+
+- 向已关闭通道发送数据，引发panic。
+- 从已关闭通道接收数据，返回已缓冲数据或零值。
+- 无论收发，nil通道都会阻塞。
+
+重复关闭，或者关闭nil通道都会引发panic错误
+```shell
+panic: close of closed chanel
+panic: close of nil channel
+```
 

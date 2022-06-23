@@ -2,6 +2,8 @@ package __concurrency
 
 import (
 	"fmt"
+	"sync"
+	"time"
 	"unsafe"
 )
 
@@ -57,4 +59,88 @@ func JudgeChanSync(c chan int) bool {
 		return true
 	}
 	return false
+}
+
+// ReceiveAndSend 除使用简单的发送和接受符外，还可以使用ok-item或range模式处理数据
+func ReceiveAndSend() {
+	done := make(chan struct{})
+	c := make(chan int)
+
+	go func() {
+		defer close(done) // 确保发送结束通知
+
+		for true {
+			x, ok := <-c
+			if !ok { // 据此判断通道是否关闭
+				return
+			}
+			println(x)
+		}
+	}()
+	c <- 1
+	c <- 2
+	c <- 3
+	close(c)
+
+	<-done
+}
+
+// ReceiveAndSendRange 对于循环接收数据，range模式更简洁一些。
+func ReceiveAndSendRange() {
+	done := make(chan struct{})
+	c := make(chan int)
+
+	go func() {
+		defer close(done) // 确保发送结束通知
+
+		for x := range c { // 循环获取消息，直到通道被关闭
+			println(x)
+		}
+	}()
+	c <- 1
+	c <- 2
+	c <- 3
+
+	close(c) // 及时用close函数关闭通道引发结束通知，否则可能会导致死锁
+
+	<-done
+}
+
+// MultipleNotify 通知是群体性的。也未必就是结束通知，可以是任何需要表达的事件。
+// 注：一次性事件用close效率更好，没有多余开销。连续或多样性事件，可传递不同数据标志实现。还可使用sync.Cond实现单播或广播事件。
+func MultipleNotify() {
+	var wg sync.WaitGroup
+	ready := make(chan struct{})
+
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+
+		go func(id int) {
+			defer wg.Done()
+			println(id, ": ready.") // 运动员准备就绪
+			<-ready                 // 等待发令
+			println(id, ": running")
+		}(i)
+	}
+
+	time.Sleep(time.Second)
+	println("Ready? Go!")
+
+	close(ready) // 嘭！
+
+	wg.Wait()
+}
+
+func multipleNotify2() {
+	c := make(chan int, 3)
+
+	c <- 10
+	c <- 20
+	close(c)
+
+	for i := 0; i < cap(c)+1; i++ {
+		x, ok := <-c
+		println(i, ":", ok, x)
+	}
+
 }

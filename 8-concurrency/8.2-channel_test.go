@@ -47,3 +47,29 @@ func TestJudgeChanSync(t *testing.T) {
 		})
 	}
 }
+
+func TestReceiveAndSend(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		// TODO: Add test cases.
+		{name: "test"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ReceiveAndSend()
+		})
+	}
+}
+
+func TestReceiveAndSendRange(t *testing.T) {
+	ReceiveAndSendRange()
+}
+
+func TestMultipleNotify(t *testing.T) {
+	MultipleNotify()
+}
+
+func Test_multipleNotify2(t *testing.T) {
+	multipleNotify2()
+}
