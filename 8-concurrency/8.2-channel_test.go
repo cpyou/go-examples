@@ -73,3 +73,7 @@ func TestMultipleNotify(t *testing.T) {
 func Test_multipleNotify2(t *testing.T) {
 	multipleNotify2()
 }
+
+func TestSelect(t *testing.T) {
+	Select()
+}
