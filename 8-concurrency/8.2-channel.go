@@ -192,3 +192,162 @@ func Select() {
 
 	wg.Wait()
 }
+
+// Select2 如要等全部通道消息处理结束（closed），可将已完成通道设置为nil，这样它就会被阻塞，不在被select选中。
+func Select2() {
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	a, b := make(chan int), make(chan int)
+
+	go func() { // 接收端
+		defer wg.Done()
+
+		for {
+			select {
+			case x, ok := <-a:
+				if !ok { // 如果通道关闭，则设置为nil，阻塞
+					a = nil
+					break
+				}
+				println("a", x)
+			case x, ok := <-b:
+				if !ok {
+					b = nil
+					break
+				}
+				println("b", x)
+
+			}
+
+			if a == nil && b == nil { // 全部结束,退出循环
+				return
+			}
+		}
+	}()
+
+	go func() { // 发送端 a
+		defer wg.Done()
+		defer close(a)
+
+		for i := 0; i < 3; i++ {
+			a <- i
+		}
+	}()
+
+	go func() { // 发送端 b
+		defer wg.Done()
+		defer close(b)
+
+		for i := 0; i < 5; i++ {
+			b <- i * 10
+		}
+	}()
+
+	wg.Wait()
+}
+
+// Select3 即便是同一通道，也会随机选择case执行
+func Select3() {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	c := make(chan int)
+
+	go func() { // 接收端
+		defer wg.Done()
+
+		for {
+			var v int
+			var ok bool
+
+			select { // 随机选择 case
+			case v, ok = <-c:
+				println("a1:", v)
+			case v, ok = <-c:
+				println("a2:", v)
+			}
+
+			if !ok {
+				return
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		defer close(c)
+
+		for i := 0; i < 10; i++ {
+			select { // 随机选择 case
+			case c <- i:
+			case c <- i * 10:
+			}
+		}
+	}()
+
+	wg.Wait()
+}
+
+// SelectDefault 当所有通道都不可用时，select 会执行 default 语句。如此可避开 select 阻塞，但须注意处理外层循环，以免陷入空耗。
+func SelectDefault() {
+	done := make(chan struct{})
+	c := make(chan int)
+
+	go func() {
+		defer close(done)
+
+		for {
+			select {
+			case x, ok := <-c:
+				if !ok {
+					return
+				}
+				fmt.Println("data:", x)
+			default: // 避免 select 阻塞
+			}
+
+			fmt.Println(time.Now())
+			time.Sleep(time.Second)
+		}
+
+	}()
+
+	time.Sleep(time.Second * 5)
+	c <- 100
+	close(c)
+
+	<-done
+}
+
+// SelectDefault2 也可以 default 处理一些默认逻辑
+func SelectDefault2() {
+	done := make(chan struct{})
+
+	data := []chan int{ // 缓冲区数据
+		make(chan int, 3),
+	}
+
+	go func() {
+		defer close(done)
+
+		for i := 0; i < 10; i++ {
+			select {
+			case data[len(data)-1] <- i: // 生产数据
+			default: // 当通道已满，生成新的缓存通道
+				data = append(data, make(chan int, 3))
+			}
+		}
+	}()
+
+	<-done
+
+	for i := 0; i < len(data); i++ {
+		c := data[i]
+		close(c)
+
+		for x := range c {
+			println(x)
+		}
+	}
+}
