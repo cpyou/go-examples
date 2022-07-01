@@ -100,6 +100,7 @@ func Semaphore() {
 	wg.Wait()
 }
 
+// TimeTick 标准库 time 提供了 timeout 和 tick channel 实现。
 func TimeTick() {
 	go func() {
 		for {
