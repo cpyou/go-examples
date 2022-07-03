@@ -73,3 +73,33 @@ panic: close of nil channel
 垃圾回收器并不收集此类资源，导致他们会在等待队列里长久休眠，形成资源泄露。
 
 示例：8.2-channel-leak
+
+8.3 同步
+
+// 应将 Mutex 锁粒度控制在最小范围内，及早释放。
+
+```go
+// 错误用法
+func doSomething()  {
+    m.Lock()
+    url := cache["key"]
+    http.Get(url) // 该操作并不需要锁保护
+    m.unLock()
+}
+
+// 正确做法
+func doSomething()  {
+    m.Lock()
+    url := cache["key"]
+    m.unLock() // 如使用 defer，则依旧将 Get 保护在内
+    http.Get(url) // 该操作并不需要锁保护
+}
+```
+
+Mutex 不支持递归锁，即便在同一 goroutine 下也会导致死锁。
+
+相关建议：
+- 对性能要求较高时，应避免使用defer Unlock。
+- 读写并发时，应用 RWMutex 性能会更好一些。
+- 对单个数据读写保护，可尝试原子操作。
+- 执行严格测试，尽可能打开数据竞争检查。
