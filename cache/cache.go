@@ -1,73 +1,63 @@
 package cache
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/go-redis/redis/v8"
+	"sync"
+	"time"
 )
 
-var ctx = context.Background()
+const (
+	// NeverClean 永远不会自动清除所有缓存
+	NeverClean time.Duration = -1
+)
 
-func GetRedisClient() *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	return rdb
-
+type Cache struct {
+	items    map[string]interface{}
+	capacity uint32
+	mu       sync.RWMutex
 }
 
-func SetAndGet() {
-	rdb := GetRedisClient()
-
-	err := rdb.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
+func NewCache(capacity uint32, cleanupInterval time.Duration) *Cache {
+	c := &Cache{
+		items:    make(map[string]interface{}),
+		capacity: capacity,
 	}
 
-	val, err := rdb.Get(ctx, "key").Result()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("key", val)
+	if cleanupInterval > 0 {
+		go func() {
+			ticker := time.NewTicker(cleanupInterval)
+			defer ticker.Stop()
 
-	val2, err := rdb.Get(ctx, "key2").Result()
-	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("key2", val2)
+			for range ticker.C {
+				c.reset()
+			}
+		}()
 	}
-	// Output: key value
-	// key2 does not exist
 
+	return c
 }
 
-func HSetAndHGet() {
-	rdb := GetRedisClient()
-	err := rdb.HSet(ctx, "hkey", "key1", "v1").Err()
-	if err != nil {
-		panic(err)
-	}
-	val, err := rdb.HGet(ctx, "hkey", "key2").Result()
-	if err == redis.Nil {
-		fmt.Println("key2 does not exist")
-	} else if err != nil {
-		panic(err)
-	} else {
-		fmt.Println("key2", val)
+func (c *Cache) Set(key string, val interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if len(c.items) == int(c.capacity) {
+		c.reset()
 	}
 
-}
-func HSet(ctx context.Context, key string, values ...interface{}) error {
-	rdb := GetRedisClient()
-	return rdb.HSet(ctx, key, values...).Err()
+	c.items[key] = val
 }
 
-func HGetResult(ctx context.Context, key, field string) (string, error) {
-	rdb := GetRedisClient()
-	return rdb.HGet(ctx, key, field).Result()
+func (c *Cache) Get(key string) (val interface{}, found bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	item, found := c.items[key]
+	return item, found
+}
+
+func (c *Cache) reset() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.items = make(map[string]interface{})
 }
