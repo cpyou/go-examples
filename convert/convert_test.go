@@ -79,3 +79,13 @@ func TestArrayToInterface(t *testing.T) {
 	fmt.Printf("%T: %v\n", z, z)
 
 }
+
+func TestPeopleToInterface(t *testing.T) {
+	p := People{
+		Name: "张三",
+		Age:  10,
+	}
+	i := PeopleToInterface(p)
+	p1 := i.(People)
+	fmt.Println(p1)
+}

@@ -6,8 +6,9 @@ import (
 )
 
 type People struct {
-	Name string `json:"name_title"`
-	Age  int    `json:"age_size"`
+	Name  string `json:"name_title"`
+	Age   int    `json:"age_size"`
+	Nodes []string
 }
 
 func StructToJsonDemo(p People) {
@@ -33,6 +34,10 @@ func JsonToStructDemo(jsonStr string) {
 		return
 	}
 	fmt.Println(people)
+}
+
+func PeopleToInterface(p People) interface{} {
+	return p
 }
 
 func JsonToMapDemo(jsonStr string) {
