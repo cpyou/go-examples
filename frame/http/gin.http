@@ -1,0 +1,29 @@
+### GET /user/john
+GET {{hostname}}/param-in-path/user/cpy
+Accept: application/json
+
+### GET /user/john
+GET {{hostname}}/param-in-path/user/john/send
+Accept: application/json
+
+### Send POST request with json body
+POST {{hostname}}/param-in-path/user/john/send
+Content-Type: application/json
+
+### loginJSON
+POST {{hostname}}/model/loginJSON
+Content-Type: application/json
+
+{
+  "user": "manu"
+}
+
+### loginXML
+POST {{hostname}}/model/loginXML
+Content-Type: application/json
+
+<?xml version="1.0" encoding="UTF-8"?>
+  <root>
+    <user>manu</user>
+    <password>123</password>
+  </root>)

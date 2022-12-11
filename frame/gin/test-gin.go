@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
-	"os"
 )
 
 func main() {
@@ -19,35 +16,54 @@ func main() {
 			"message": "pong",
 		})
 	})
-	// Set a lower memory limit for multipart forms (default is 32 MiB)
-	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-	router.POST("/upload", func(c *gin.Context) {
-		// Single file
-		file, _ := c.FormFile("file")
-		log.Println(file.Filename)
 
-		// Upload the file to specific dst.
-		filePath, _ := os.Getwd()
-		dst := filePath + "/" + file.Filename
-		c.SaveUploadedFile(file, dst)
+	parameterInPath := router.Group("/param-in-path")
+	{
+		// This handler will match /user/john but will not match /user/ or /user
+		parameterInPath.GET("/user/:name", userName)
+		// However, this one will match /user/john/ and also /user/john/send
+		// If no other routers match /user/john, it will redirect to /user/john/
+		parameterInPath.GET("/user/:name/*action", userNameAction)
 
-		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
-	})
-	router.POST("/multi-upload", func(c *gin.Context) {
-		// Multipart form
-		form, _ := c.MultipartForm()
-		files := form.File["upload[]"]
+		// For each matched request Context will hold the route definition
+		parameterInPath.POST("/user/:name/*action", func(c *gin.Context) {
+			b := c.FullPath() == "/param-in-path/user/:name/*action" // true
+			c.String(http.StatusOK, "%t", b)
+		})
 
-		for _, file := range files {
-			log.Println(file.Filename)
-			filePath, _ := os.Getwd()
-			dst := filePath + "/" + file.Filename
+		// This handler will add a new router for /user/groups.
+		// Exact routes are resolved before param routes, regardless of the order they were defined.
+		// Routes starting with /user/groups are never interpreted as /user/:name/... routes
+		parameterInPath.GET("/user/groups", func(c *gin.Context) {
+			c.String(http.StatusOK, "The available groups are [...]")
+		})
+	}
 
-			// Upload the file to specific dst.
-			c.SaveUploadedFile(file, dst)
-		}
-		c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
-	})
+	// Simple group: file
+	file := router.Group("/file")
+	{
+		// Set a lower memory limit for multipart forms (default is 32 MiB)
+		router.MaxMultipartMemory = 8 << 20 // 8 MiB
+		file.POST("/upload", upload)
+		file.POST("/multi-upload", multiUpload)
+	}
+
+	model := router.Group("/model")
+	{
+		// Example for binding JSON ({"user": "manu", "password": "123"})
+		model.POST("/loginJSON", loginJSON)
+
+		// Example for binding XML (
+		//  <?xml version="1.0" encoding="UTF-8"?>
+		//  <root>
+		//    <user>manu</user>
+		//    <password>123</password>
+		//  </root>)
+		router.POST("/loginXML", loginXML)
+
+		// Example for binding a HTML form (user=manu&password=123)
+		router.POST("/loginForm", loginForm)
+	}
 
 	// 监听，并在 localhost:8080上启动服务
 	router.Run()
