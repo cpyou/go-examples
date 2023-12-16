@@ -1,4 +1,4 @@
-package function
+package __function
 
 func lambda() {
 	// 直接执行

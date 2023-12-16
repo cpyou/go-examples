@@ -1,4 +1,4 @@
-package function
+package __function
 
 // errors.New ; fmt.Errorf
 import (

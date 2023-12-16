@@ -1,4 +1,4 @@
-package function
+package __function
 
 import (
 	"fmt"
@@ -28,6 +28,6 @@ func newOption() *serverOption {
 func DefaultOptionFunc(opt *serverOption) {}
 
 // 4.2 可变参数
-func variableParams(s string, a ...int){
+func variableParams(s string, a ...int) {
 	fmt.Println(s, a)
 }

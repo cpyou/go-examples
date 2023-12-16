@@ -1,4 +1,4 @@
-package function
+package __function
 
 // 闭包（closure）是在词法上下文中引用了自由变量的函数，或者说是函数和其作用的环境的组合体。
 
