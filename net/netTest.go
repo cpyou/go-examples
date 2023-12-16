@@ -24,7 +24,6 @@ func main() {
 
 }
 
-//
 type tcpKeepAliveListener struct {
 	*net.TCPListener
 }
